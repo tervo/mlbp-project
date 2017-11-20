@@ -1,0 +1,2 @@
+results results_nn1_27_3_50000 results_nn2_27_3_50000 results_nn3_27_3_50000 results_nn4_tanh_001_9_27_50000 results_nn5_sigmoid_001_9_27_100000
+k-fold-nn1-activation.png k-fold-nn1-learning.png method_comp_res.png nn1-activation.png nn1-learning.png nn1_model_size_comp.png nn_perf.png pca_explained_variance.png rfc_feat_imp.png scree_plot.png

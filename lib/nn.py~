@@ -1,0 +1,9 @@
+# -*- coding: utf-8 -*-
+from theano import tensor as T
+import numpy as np
+import theano
+import matplotlib.pyplot as plt
+import matplotlib as mt
+import matplotlib.gridspec as gridspec
+
+% matplotlib inline

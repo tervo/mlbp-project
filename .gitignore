@@ -1,0 +1,8 @@
+results*
+*.png
+deepsound
+*.pkl
+models*
+*.h5
+*.yaml
+
