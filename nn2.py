@@ -22,11 +22,11 @@ import lib.viz
 import lib.cl
 
 SEED = 42
-N_LAYERS = 3
-FILTER_LENGTH = 5
-CONV_FILTER_COUNT = 128 #256
+N_LAYERS = 3 #3
+FILTER_LENGTH = 10 #5
+CONV_FILTER_COUNT = 256 #256
 CONV_FILTER_STRIDES = 2
-LSTM_COUNT = 128 #256
+LSTM_COUNT = 256 #256
 BATCH_SIZE = 32
 EPOCH_COUNT = 200
 CLASS_COUNT = 10
@@ -112,9 +112,14 @@ if __name__ == '__main__':
                       default=None,
                       help='path to the load model',
                       metavar='LOAD_PATH')
-
+    parser.add_option('-o', '--output_path', dest='output_path',
+                      default='output',
+                      help='path to save results',
+                      metavar='OUTPUT_PATH')
+        
+    
     options, args = parser.parse_args()
-
+    
     input_filename_x = 'train_data.csv'
     input_filename_y = 'train_labels.csv'    
     test_input_filename = 'test_data.csv'
@@ -123,7 +128,8 @@ if __name__ == '__main__':
     weights_filename = 'weights.h5'
     
     io = lib.io.IO()
-    viz = lib.viz.Viz()    
+    viz = lib.viz.Viz()
+    cl = lib.cl.CL(io, viz)
     
     # Read data
     print "Reading train data..."
@@ -139,15 +145,21 @@ if __name__ == '__main__':
     test_x = np.matrix(test_x)
     test_ids = range(1, len(test_x)+1)    
 
-    val_ids, val_x, val_y = io.pick_set(X, y, 563)
-    train_ids, train_x, train_y = io.pick_set(X, y, 3800)    
-
     # load from file
     if options.load_path is not None:
         model = load_model(options.load_path+'/'+model_filename, options.load_path+'/'+weights_filename)
     # train
     else:
+        # Remove outliers
+        X = cl.lfo(np.matrix(X)).tolist()
+    
+        # Pick val and train set
+        val_ids, val_x, val_y = io.pick_set(X, y, 526)
+        train_ids, train_x, train_y = io.pick_set(X, y, 3400)    
+
+        # train
         model, history = train_model(train_x, train_y, val_x, val_y)
+        
         # Save model
         full_model_filename = options.model_path + '/'+model_filename
         full_weights_filename = options.model_path + '/'+weights_filename
@@ -156,14 +168,17 @@ if __name__ == '__main__':
             model.save_weights(full_weights_filename)
 
         # Print metrics
-        viz.plot_nn_perf(history, 'nn_perf.png')
-            
+        viz.plot_nn_perf(history, options.output_path+'/nn_perf.png')
+
+    # visualize model    
+    viz.plot_model(model, options.output_path+'/model.png')
+    
+    # predict
     pred_proba = predict(model, test_x)
-    pred_class = np.argmax(pred_proba, axis=1)
-    
+    pred_class = np.argmax(pred_proba, axis=1)    
     pred_class = io.shift_v(pred_class, shift=1)    
-    
+
     # Output
-    io.write_classes('classes_nn2_result.csv', test_ids, pred_class)
-    io.write_probabilities('probabilities_nn2_result.csv', test_ids, pred_proba)
+    io.write_classes(options.output_path+'/classes_result.csv', test_ids, pred_class)
+    io.write_probabilities(options.output_path+'/probabilities_result.csv', test_ids, pred_proba)
 

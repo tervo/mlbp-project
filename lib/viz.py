@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
+from keras.utils import plot_model
 
 class Viz:
 
@@ -211,10 +212,15 @@ class Viz:
 
         lns = lns1+lns2+lns3+lns4
         labs = [l.get_label() for l in lns]
-        ax.legend(lns, labs, loc=0, frameon=False)
+        ax1.legend(lns, labs, loc=0, frameon=False)
         # plt.legend(['Training Accuracy', 'Validation Accuracy', 'Training Loss', 'Validation Loss'])
         plt.xlabel('Epoch')        
 
         plt.savefig(filename)
 
+    def plot_model(self, model, filename):
+        print("Plotted model structure to "+filename)
+        plot_model(model, to_file=filename, show_shapes=True)
         
+
+    
