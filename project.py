@@ -35,10 +35,14 @@ def main(argv):
     test_ids = range(1, len(test_x)+1)    
 
     # Remove outliers
-    X = cl.lfo(np.matrix(X))
-    X_ = cl.lfo(np.matrix(X_)).tolist()
-    
-    # PCA etc.
+    X, y = cl.lfo(np.matrix(X), np.matrix(y))
+    X_, y_ = cl.lfo(np.matrix(X_), np.matrix(y_))
+
+    # Shuffle
+    X, y = io.shuffle(X, y)
+    X_, y_ = io.shuffle(X_, y_)
+
+    # PCA
     X = cl.pca(X, 'pca_explained_variance.png').tolist()
     test_x = cl.pca(test_x, None).tolist()
 
@@ -48,8 +52,8 @@ def main(argv):
     
     val_ids, val_x, val_y = io.pick_set(X, y, 726)
     _, no_pca_val_x, no_pca_val_y = io.pick_set(X_, y_, 726)
-    train_ids, train_x, train_y = io.pick_set(X, y, 2200)
-    _, no_pca_train_x, no_pca_train_y = io.pick_set(X_, y_, 2200)
+    train_ids, train_x, train_y = io.pick_set(X, y, 3200)
+    _, no_pca_train_x, no_pca_train_y = io.pick_set(X_, y_, 3200)
     
     # Train
     cl.svc_cl_train(train_x, train_y, filename=svc_model_filename)

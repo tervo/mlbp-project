@@ -19,7 +19,7 @@ class CL:
         self.io = io
         self.viz = viz
         self.svc_classif = OneVsRestClassifier(SVC(kernel='linear', probability=True), n_jobs=-1)
-        self.lr_classif = OneVsRestClassifier(LogisticRegression(), n_jobs=-1)
+        self.lr_classif = OneVsRestClassifier(LogisticRegression(tol=0.00001, max_iter=10000, penalty='l2', C=1.), n_jobs=-1)
         self.rfc_classif = RandomForestClassifier(n_jobs=-1)
 
     ################################################################################    
@@ -34,23 +34,25 @@ class CL:
             self.viz.explained_variance(pca, filename)
 
         # With actual number of components
-        # pca = decomposition.PCA(whiten=True, n_components=264)
+        #pca = decomposition.PCA(whiten=True, n_components=264)
         pca = decomposition.PCA(n_components=20)
         X = pca.fit_transform(X)
         print("X shape after PCA detection %d, %d"%X.shape)
         return X
 
-    def lfo(self, X):
-        print "Doing LFO outlier detection..."
+    def lof(self, X, y):
+        print "Doing LOF outlier detection..."
 
         r,f = X.shape
         clf = LocalOutlierFactor(n_neighbors=20, n_jobs=-1)
         y_pred = clf.fit_predict(X)
-        X = X[y_pred>0,:]        
+        X = X[y_pred>0,:]
+        y = y[:, y_pred>0]
         
         print "Removed "+ str(r - X.shape[0]) + " outliers"
         print("X shape after outlier detection %d, %d"%X.shape)
-        return X
+        print("y shape after outlier detection %d, %d"%y.shape)
+        return X.tolist(), y.tolist()[0]
     
     # SVC
     ################################################################################

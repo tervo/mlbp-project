@@ -23,13 +23,13 @@ import lib.viz
 import lib.cl
 
 SEED = 42
-N_LAYERS = 5 #3
-FILTER_LENGTH = 5 #5
+N_LAYERS = 3 #3
+FILTER_LENGTH = 10 #5
 CONV_FILTER_COUNT = 256 #256
 CONV_FILTER_STRIDES = 2
 LSTM_COUNT = 256 #256
 BATCH_SIZE = 32
-EPOCH_COUNT = 600
+EPOCH_COUNT = 200
 CLASS_COUNT = 10
 
 def predict(model, x):
@@ -55,6 +55,7 @@ def train_model(x_train, y_train, x_val, y_val):
     x_train = np.expand_dims(x_train, axis=2)
     x_val = np.expand_dims(x_val, axis=2) 
     print("x_train shape: %d, %d, %d"%x_train.shape)
+
     #print x_train
     y_cat = to_categorical(y_train)
     y_val = to_categorical(y_val)
@@ -77,9 +78,9 @@ def train_model(x_train, y_train, x_val, y_val):
 
         layer = Activation('relu')(layer)
         layer = MaxPooling1D(2)(layer)
-        layer = Dropout(0.25)(layer)
+        # layer = Dropout(0.25)(layer)
 
-    #layer = Dropout(0.5)(layer)
+    layer = Dropout(0.5)(layer)
     layer = LSTM(LSTM_COUNT, return_sequences=True)(layer)
     layer = Dropout(0.5)(layer)
     layer = TimeDistributed(Dense(CLASS_COUNT))(layer)
@@ -154,15 +155,15 @@ if __name__ == '__main__':
     # train
     else:
         # Remove outliers
-        X,y = cl.lof(np.matrix(X), np.matrix(y))
+        X, y = cl.lfo(np.matrix(X), np.matrix(y))
 
-        # Suffle
+        # Shuffle
         X, y = io.shuffle(X, y)
         
         # Pick val and train set
         val_ids, val_x, val_y = io.pick_set(X, y, 526)
-        train_ids, train_x, train_y = io.pick_set(X, y, 3400)    
-
+        train_ids, train_x, train_y = io.pick_set(X, y, 3400)
+        
         # train
         model, history = train_model(train_x, train_y, val_x, val_y)
         

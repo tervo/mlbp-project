@@ -42,7 +42,15 @@ class IO:
                 new_row.append([i,value])
             new.append(new_row)
         return new
-        
+
+    def shuffle(self, X, y):
+        print "Shuffling data..."
+        c = list(zip(X, y))
+        random.shuffle(c)
+        X, y = zip(*c)
+        X, y = list(X), list(y)
+        return X, y
+    
     def read_data(self, xfilename, yfilename):
         """ Read data from files """
         X, y = [], []
@@ -104,7 +112,7 @@ class IO:
 
         if len(set_x) >= num_of_samples:
             num_of_samples = len(set_x)-1
-        
+            
         while len(set_x) < num_of_samples:
             i = r.randrange(0, len(x))            
             set_x.append(x.pop(i))
