@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, re
+import sys, re, itertools
 import numpy as np
 import matplotlib as mlp
 mlp.use('Agg')
@@ -9,9 +9,20 @@ import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 from keras.utils import plot_model
 from keras import activations
+from sklearn.metrics import confusion_matrix
 
 class Viz:
 
+    def label_hist(self, y, filename):
+        print("Plotting label histogram")
+        fig = plt.figure(figsize=(8,5))
+        plt.hist(y, normed=True, alpha=0.75)
+        plt.xticks( np.arange(1,10) )
+        plt.xlabel('Train set genres (labels)')        
+        plt.ylabel('Probability')
+        plt.grid(True)
+        plt.savefig(filename)
+        
     def scree_plot(self, X, filename):
         rows, cols = X.shape
         U, S, V = np.linalg.svd(X) 
@@ -45,11 +56,10 @@ class Viz:
         ind = np.arange(len(x))
         width = 0.35
             
-        rects1 = ax1.bar(ind, y1, width, color='y')
+        rects1 = ax1.bar(ind, y1, width, color='#5799c6', label='Logistic loss')
 
         ax2 = ax1.twinx()
-        rects2 = ax2.bar(ind + width+0.05, y2, width, color='r')
-
+        rects2 = ax2.bar(ind + width+0.05, y2, width, color='#ff6450', label='Prediction score')
 
         def autolabel(rects, ax):
             """
@@ -69,12 +79,44 @@ class Viz:
 
         ax1.set_ylabel('Prediction score')
         ax2.set_ylabel('Logistic loss for prediction probabilities')
-        
+
+        h1, l1 = ax1.get_legend_handles_labels()
+        h2, l2 = ax2.get_legend_handles_labels()
+        ax1.legend(h1+h2, l1 + l2, loc='upper center', bbox_to_anchor=(0.5, 1.05),
+                   ncol=3, fancybox=True, shadow=True)
         plt.savefig(filename)
 
         print "Saved method comparison chart to " + filename
         
+    def cross_results(self, x, ll, acc, filename):
         
+        fig, ax1 = plt.subplots(figsize=(16,10))
+
+        plt.grid()        
+        
+        lns1 = ax1.plot(
+            x,
+            ll,
+            c="#27ae61",
+            label="Logistic loss")
+        ax1.set_ylabel("Logistic Loss")
+        
+        ax2 = ax1.twinx()
+        lns2 = ax2.plot(
+            x,
+            acc,
+            c="#c1392b",
+            label="Accuracy")
+        ax2.set_ylabel("Accuracy")
+
+        lns = lns1+lns2
+        labs = [l.get_label() for l in lns]
+        ax1.legend(lns, labs, loc='upper center', frameon=False)
+        ax1.set_xlabel("Components")
+
+        print "Plotted cross validation results to "+ filename
+        plt.savefig(filename)
+
             
     def rfc_feature_importance(self, data, filename):
         fig, ax1 = plt.subplots(figsize=(12,8))
@@ -111,13 +153,6 @@ class Viz:
 
         print "Saved explained variance to "+filename
     
-    def scatter_classes(self, X, Y, filename):
-
-        plt.figure()
-
-        
-        
-        plt.savefig(filename)
 
 
     def plot_learning(self, cost_train_vec, cost_test_vec, filename):
@@ -145,6 +180,46 @@ class Viz:
 
         print "Plotted learning rate to "+ filename
         plt.savefig(filename)
+
+
+    def plot_confusion_matrix(self, y_true, y_pred, classes,
+                              normalize=False,
+                              cmap=plt.cm.Blues,
+                              filename='confusion_matrix.png'):
+        """
+        This function prints and plots the confusion matrix.
+        Normalization can be applied by setting `normalize=True`.
+        """
+
+        fig, ax = plt.subplots()
+        np.set_printoptions(precision=2)
+        cm = confusion_matrix(y_true, y_pred)
+        if normalize:
+            cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+            print("Normalized confusion matrix")
+        else:
+            print('Confusion matrix, without normalization')
+
+        print(cm)
+            
+        plt.imshow(cm, interpolation='nearest', cmap=cmap)
+        tick_marks = np.arange(len(classes))
+        ax.xaxis.tick_top()
+        plt.xticks(tick_marks, classes) #, rotation=45)
+        plt.yticks(tick_marks, classes)
+        
+        fmt = '.2f' if normalize else 'd'
+        thresh = cm.max() / 2.
+        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+            plt.text(j, i, format(cm[i, j], fmt),
+                     horizontalalignment="center",
+                     color="white" if cm[i, j] > thresh else "black")
+
+        plt.tight_layout()
+        plt.ylabel('True label')
+        plt.xlabel('Predicted label')
+        plt.savefig(filename)
+        
         
     ################################################################################
 
@@ -155,10 +230,8 @@ class Viz:
         plt.plot(model_sizes, train_errors, linewidth=1.0, label='training accuray')
         plt.ylabel('accuracy')
         plt.xlabel('model size (r**2, r)')
-        plt.axhline(0, color='black', linewidth=0.5)
-    
-        plt.legend(frameon=False)
-        
+        plt.axhline(0, color='black', linewidth=0.5)    
+        plt.legend(frameon=False)        
         plt.savefig(filename)
 
         

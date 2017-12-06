@@ -10,6 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import decomposition
 from sklearn.neighbors import LocalOutlierFactor
+from sklearn.metrics import confusion_matrix
 
 class CL:
     
@@ -24,7 +25,7 @@ class CL:
 
     ################################################################################    
 
-    def pca(self, X, filename):
+    def pca(self, X, components=20, filename=None):
         print "Doing PCA analysis..."
 
         # For visualizing purposes
@@ -35,7 +36,7 @@ class CL:
 
         # With actual number of components
         #pca = decomposition.PCA(whiten=True, n_components=264)
-        pca = decomposition.PCA(n_components=20)
+        pca = decomposition.PCA(n_components=components)
         X = pca.fit_transform(X)
         print("X shape after PCA detection %d, %d"%X.shape)
         return X
@@ -54,6 +55,30 @@ class CL:
         print("y shape after outlier detection %d, %d"%y.shape)
         return X.tolist(), y.tolist()[0]
     
+    def confusion(self, y_true, y_pred):
+        print "Creating confusion matrix..."
+
+        conf = confusion_matrix(y_true, y_pred)
+
+        i = 0
+        for true_value in conf:
+            i += 1
+            print "& \\textbf{"+str(i)+"} & " + " & ".join(map(str, true_value.tolist())) + "\\\\"
+
+        conf = conf.astype('float') / conf.sum(axis=1)[:, np.newaxis]
+        norm = []
+        for row in conf:
+            nrow = []
+            [nrow.append(round(float(i), 2)) for i in row]
+            norm.append(nrow)
+
+        print "Normalized: "
+        i = 0
+        for true_value in norm:
+            i += 1
+            print "& \\textbf{"+str(i)+"} & " + " & ".join(map(str, true_value)) + "\\\\"
+        
+        
     # SVC
     ################################################################################
     

@@ -35,16 +35,16 @@ def main(argv):
     test_ids = range(1, len(test_x)+1)    
 
     # Remove outliers
-    X, y = cl.lfo(np.matrix(X), np.matrix(y))
-    X_, y_ = cl.lfo(np.matrix(X_), np.matrix(y_))
+    X, y = cl.lof(np.matrix(X), np.matrix(y))
+    X_, y_ = cl.lof(np.matrix(X_), np.matrix(y_))
 
     # Shuffle
     X, y = io.shuffle(X, y)
     X_, y_ = io.shuffle(X_, y_)
 
     # PCA
-    X = cl.pca(X, 'pca_explained_variance.png').tolist()
-    test_x = cl.pca(test_x, None).tolist()
+    X = cl.pca(np.matrix(X), 'pca_explained_variance.png').tolist()
+    test_x = cl.pca(np.matrix(test_x), None).tolist()
 
     # Split data to train and validation set
     # mini_batches
